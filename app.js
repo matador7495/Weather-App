@@ -1,4 +1,5 @@
 import getWeatherData from "./utils/httpReq.js";
+import { removeModal, showModal } from "./utils/modal.js";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -7,10 +8,10 @@ const searchButton = document.querySelector("button");
 const weatherContainer = document.getElementById("weather");
 const forecastContainer = document.getElementById("forecast");
 const locationIcon = document.getElementById("location-icon");
-
-
+const modalButton = document.getElementById("modal-button");
 
 const renderCurrentWeather = (data) => {
+  if (!data) return;
   const weatherJSX = `
     <h1>${data.name}, ${data.sys.country}</h1>
     <div id="main">
@@ -32,16 +33,18 @@ const getWeekDay = (date) => {
 };
 
 const renderForecastWeather = (data) => {
+  if (!data) return;
+
   forecastContainer.innerHTML = "";
   data = data.list.filter((obj) => obj.dt_txt.endsWith("12:00:00"));
 
   data.forEach((i) => {
     const forecastJSX = `
       <div>
-      <img alt="weather icon" src="https://openweathermap.org/img/w/${i.weather[0].icon}.png" />
-      <h3>${getWeekDay(i.dt)}</h3>
-      <p>${Math.round(i.main.temp)} °C</p>
-      <span>${i.weather[0].main}</span>
+        <img alt="weather icon" src="https://openweathermap.org/img/w/${i.weather[0].icon}.png" />
+        <h3>${getWeekDay(i.dt)}</h3>
+        <p>${Math.round(i.main.temp)} °C</p>
+        <span>${i.weather[0].main}</span>
       </div>
     `;
 
@@ -53,35 +56,37 @@ const searchHandler = async () => {
   const cityName = searchInput.value;
 
   if (!cityName) {
-    alert("Please enter city name");
+    showModal("Please enter city name");
+    return;
   }
 
-  const currentData = await getWeatherData("current",cityName);
+  const currentData = await getWeatherData("current", cityName);
   renderCurrentWeather(currentData);
 
-  const forecastData = await getWeatherData("forecast",cityName);
+  const forecastData = await getWeatherData("forecast", cityName);
   renderForecastWeather(forecastData);
 };
 
 const positionCallback = async (position) => {
-  const currentData = await getWeatherData("current",position.coords);
+  const currentData = await getWeatherData("current", position.coords);
   renderCurrentWeather(currentData);
 
-  const forecastData = await getWeatherData("forecast",position.coords);
+  const forecastData = await getWeatherData("forecast", position.coords);
   renderForecastWeather(forecastData);
 };
 
 const errorCallback = (error) => {
-  console.log(error.message);
+  showModal(error.message);
 };
 
 const locationHandler = () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(positionCallback, errorCallback);
   } else {
-    alert("Geolocation is not supported by this browser.");
+    showModal("Geolocation is not supported by this browser.");
   }
 };
 
 searchButton.addEventListener("click", searchHandler);
 locationIcon.addEventListener("click", locationHandler);
+modalButton.addEventListener("click", removeModal);
