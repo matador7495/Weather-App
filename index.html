@@ -8,11 +8,13 @@
   </head>
   <body>
     <div id="search">
-      <img src="./img/location.png" alt="location icon" id="location-icon" />
-      <input type="text" placeholder="Enter city name" />
-      <button>Search</button>
+      <img src="./img/location.png" alt="location icon" id="location-icon"  title="Click on me to get current location" />
+      <div>
+        <input type="text" placeholder="Enter city name" />
+        <button>Search</button>
+      </div>
     </div>
-    <div id="weather"></div>
+    <div id="weather"><span id="loader"></span></div>
     <div id="forecast"></div>
     <div id="modal">
       <div>
