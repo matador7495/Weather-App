@@ -1,10 +1,11 @@
 const BASE_URL = `https://api.openweathermap.org/data/2.5/`;
-
 const API_KEY = "72b923d635e66c6ea9a19cb74241b300";
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const searchInput = document.querySelector("input");
 const searchButton = document.querySelector("button");
 const weatherContainer = document.getElementById("weather");
+const forecastContainer = document.getElementById("forecast");
 const locationIcon = document.getElementById("location-icon");
 
 const getCurrentWeatherByName = async (city) => {
@@ -21,8 +22,14 @@ const getCurrentWeatherByCoordinates = async (lat, lon) => {
   return json;
 };
 
+const getForecastWeatherByName = async (city) => {
+  const url = `${BASE_URL}/forecast?q=${city}&appid=${API_KEY}&units=metric`;
+  const response = await fetch(url);
+  const json = await response.json();
+  return json;
+};
+
 const renderCurrentWeather = (data) => {
-  console.log(data);
   const weatherJSX = `
     <h1>${data.name}, ${data.sys.country}</h1>
     <div id="main">
@@ -39,6 +46,27 @@ const renderCurrentWeather = (data) => {
   weatherContainer.innerHTML = weatherJSX;
 };
 
+const getWeekDay = (date) => {
+  return DAYS[new Date(date * 1000).getDay()];
+};
+
+renderForecastWeather = (data) => {
+  data = data.list.filter((obj) => obj.dt_txt.endsWith("12:00:00"));
+
+  data.forEach((i) => {
+    const forecastJSX = `
+      <div>
+      <img alt="weather icon" src="https://openweathermap.org/img/w/${i.weather[0].icon}.png" />
+      <h3>${getWeekDay(i.dt)}</h3>
+      <p>${Math.round(i.main.temp)} °C</p>
+      <span>${i.weather[0].main}</span>
+      </div>
+    `;
+
+    forecastContainer.innerHTML += forecastJSX;
+  });
+};
+
 const searchHandler = async () => {
   const cityName = searchInput.value;
 
@@ -48,6 +76,9 @@ const searchHandler = async () => {
 
   const currentData = await getCurrentWeatherByName(cityName);
   renderCurrentWeather(currentData);
+
+  const forecastData = await getForecastWeatherByName(cityName);
+  renderForecastWeather(forecastData);
 };
 
 const positionCallback = async (position) => {
